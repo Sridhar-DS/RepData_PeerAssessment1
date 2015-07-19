@@ -1,21 +1,13 @@
-Reproducible research - Assignment 1
-========================================================
+###############################################################################
+### Refer the required packages
+###############################################################################
 
-
-#  0.0 Invoke the required libraries
-
-```{r}
 library(dplyr)
 library(ggplot2)
 library(lubridate)
 library(tidyr)
 options(digits=12)
-
-```
-
-#  0.1 Download the file and read it
-
-```{r echo=TRUE}
+##trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
 ###############################################################################
 ### Download the file from web
@@ -44,11 +36,6 @@ dat<-read.csv("./activity.csv",head=TRUE,sep=",")
 
 dat$date<-as.POSIXct(as.character(levels(dat$date)), format = "%Y-%m-%d")[dat$date]
 
-```
-
-#  1.1  Total number of steps taken per day ?
-
-``` {r echo=TRUE}
 ###############################################################################
 ## Part 1 of the assignment
 ###############################################################################
@@ -72,11 +59,7 @@ ggplot(data=daywise,aes(x=date,y=tot_steps)) +
         labs(title="Total number of steps taken per day") +
         labs(x="Date", y="Total steps")
 
-```
 
-#  1.2 Histogram of the total number of steps taken each day ?
-
-``` {r echo=TRUE}
 ## Plot the histogram for steps walked
 
 ggplot(data=daywise,aes(x=tot_steps)) + 
@@ -84,11 +67,6 @@ ggplot(data=daywise,aes(x=tot_steps)) +
         labs(title="Histogram for total steps ") +
         labs(x="Number of daily steps", y="Frequency")
 
-```
-
-#  1.3 Mean total steps taken per day ?
-
-``` {r echo=TRUE}
 ## Mean and Median steps by day
 
 summary.steps<-summarise(by_date,mean_steps=mean(steps),median_steps=median(steps))
@@ -100,12 +78,6 @@ ggplot(data=summary.steps1,aes(x=date,y=summary_value,colour=summary_name)) +
         labs(title="Mean & Median steps taken per day") +
         labs(x="Date", y="Total steps")
 
-```
-
-
-#  2.1 Time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis) ?
-
-```{r echo=TRUE}
 ## Format the interval values.
 
 my_tbl2<-mutate(my_tbl,new_interval=as.character(interval))
@@ -129,43 +101,21 @@ ggplot(intwise,aes(x=interval,y=tot_steps)) +
         labs(title="Time series : Average number of steps taken averaged across days") +
         labs(x="Interval", y="Steps")
 
-```
-
-#  2.2 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps ?
-
-```{r echo=TRUE}
-
 ## which interval got max steps
 
 max_steps<-summarize(intwise,mi=max(tot_steps))
 
 max_steps_interval<-subset(intwise,tot_steps==max_steps$mi)
 
-print(paste("Max steps observed at interval ",max_steps_interval$interval, "max steps = ",max_steps_interval$tot_steps ))
+print(max_steps_interval)
 
-```
-
-#  3.1 Calculate and report the total number of missing values in the dataset ?
-
-```{r echo=TRUE}
+###############################################################################
+## Part 2 of the assignment
+###############################################################################
 
 ## Number of rows where values are null. Report by column.
 na_counts<- colSums(is.na(dat)) 
 
-print(paste("Number of rows with NA values for steps : ",na_counts[1]))
-
-```
-
-#  3.2 Devise a strategy for filling in all of the missing values in the dataset ?
-
-```{r echo=TRUE}
-print(paste("Strategy for fixing NA values for steps : ","Applied mean for that 5-minute interval across days"))
-```
-
-
-#  3.3 Create a new dataset that is equal to the original dataset but with the   missing data filled in. ?
-
-``` {r echo=TRUE}
 ## Find the average steps for every 5 minute interval.
 
 row.has.na <- apply(dat, 1, function(x){any(is.na(x))})
@@ -199,14 +149,6 @@ for(i in 1:nrow(rows.with.na2)) {
 
 data.final<- rbind(rows.with.na2,rows.without.na2)
 
-Print("The dataset with values replaced for NA is named as data.final")
-
-```
-
-#  3.4 Make a histogram of the total number of steps taken each day ?
-
-```{r echo=TRUE}
-
 ## convert the df to table
 
 my_tbl4<-tbl_df(data.final)
@@ -218,19 +160,15 @@ by_date4<-group_by(my_tbl4,date)
 ## summarise the steps by date
 
 daywise4<-summarise(by_date4,tot_steps=sum(steps))
+print(daywise4)
 
 ## Plot the histogram after NA's are replaced
 
 ggplot(data=daywise4,aes(x=tot_steps)) + 
         geom_histogram(binwidth=2000 , colour="black", fill="thistle1") +        
-        labs(title="Histogram for Total steps taken each day : Post NA fix") +
+        labs(title="Histogram for Total steps taken each day ") +
         labs(x="Number of daily steps", y="Frequency")
 
-```
-
-#  3.5 Calculate and report the mean and median total number of steps taken per day ?
-
-```{r echo=TRUE}
 ## Comparison of mean and median steps : Before and after NA cleanup
 
 summary.steps.temp1<-summarise(by_date,mean_na_ignored=mean(steps),median_na_ignored=median(steps))
@@ -253,21 +191,9 @@ ggplot(data=summary.gather.total,aes(x=date,y=summary_value)) +
               strip.text.y = element_text(size=14, face="bold"),
               strip.background = element_rect(colour="red", fill="#CCCCFF"))
 
-```
-
-#  3.6 Do these values differ from the estimates from the first part of the assignment?
-
-```{r echo=TRUE}
-
 print("The mean steps taken per day appears same before and after NA fix")
 
 print("The median steps taken per day is different only for days where NA has been replaced.")
-
-```
-
-#  3.7 What is the impact of imputing missing data on the estimates of the total daily number of steps?
-
-```{r echo=TRUE}
 
 ## Comparison of total steps per day : Before and after NA cleanup
 
@@ -290,11 +216,15 @@ ggplot(data=daywise.gather,aes(x=date,y=summary_value)) +
 
 print("There is no impact on replacing NA values. Reason : If a NA was observed for an interval..the it is seen for that entire day. Then the impacted days got values from average of that interval across days. There were'nt a case where NA values and total steps were observed within a day. ")
 
-```
+## Mean and median for the steps
 
-# 4.1  Are there differences in activity patterns between weekdays and weekends?
+mean(daywise4$tot_steps)
 
-```{r echo=TRUE}
+median(daywise4$tot_steps)
+
+###############################################################################
+## Part 3 of the assignment
+###############################################################################
 
 ## Add wk_ind column to the clean dataset (one without NA's)
 
@@ -315,6 +245,14 @@ ggplot(intwise6,aes(x=interval,y=tot_steps,group=wk_ind)) +
         theme(strip.text.x = element_text(size=14, face="bold"),
               strip.text.y = element_text(size=14, face="bold"),
               strip.background = element_rect(colour="red", fill="#CCCCFF"))
+        
+
+## End of assignment 1 code
+        
 
 
-print("Yes there is a difference in activity levels between  weekdays and weekends. ")
+
+
+
+
+
